@@ -4,4 +4,3 @@ requests
 pytz
 paramiko
 python-dotenv==1.0.1
-ssl
