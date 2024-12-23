@@ -17,12 +17,13 @@ from pathlib import Path
 # Leer configuraciones locales desde config.toml
 config = toml.load(".streamlit/config.toml")
 
-# Configuración general
-LOCAL_FILE = secrets["local_file"]
-REMOTE_FILE = secrets["remote_file"]
-CSV_CONVOCATORIAS_FILE = secrets["csv_file"]
-LOGO_FILE = secrets["logo_file"]
-TIMEZONE = secrets["timezone"]
+
+# Cargar credenciales desde secrets.toml
+secrets_path = Path("secrets.toml")
+if not secrets_path.exists():
+    raise FileNotFoundError("El archivo 'secrets.toml' no existe. Por favor, créalo con las credenciales necesarias.")
+
+secrets = toml.load(secrets_path)["secrets"]
 
 # Configuración del servidor y correo
 SMTP_SERVER = secrets["smtp_server"]
@@ -30,11 +31,14 @@ SMTP_PORT = secrets["smtp_port"]
 EMAIL_USER = secrets["email_user"]
 EMAIL_PASSWORD = secrets["email_password"]
 NOTIFICATION_EMAIL = secrets["notification_email"]
+CSV_CONVOCATORIAS_FILE = secrets["csv_convocatorias_file"]
 REMOTE_HOST = secrets["remote_host"]
 REMOTE_USER = secrets["remote_user"]
 REMOTE_PASSWORD = secrets["remote_password"]
 REMOTE_PORT = secrets["remote_port"]
 REMOTE_DIR = secrets["remote_dir"]
+REMOTE_FILE = secrets["remote_file"]
+LOCAL_FILE = secrets["local_file"]
 
 
 # Función para registrar datos en CSV con el formato correcto
