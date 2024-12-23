@@ -17,28 +17,22 @@ from pathlib import Path
 # Leer configuraciones locales desde config.toml
 config = toml.load(".streamlit/config.toml")
 
-
-# Cargar credenciales desde secrets.toml
-secrets_path = Path("secrets.toml")
-if not secrets_path.exists():
-    raise FileNotFoundError("El archivo 'secrets.toml' no existe. Por favor, créalo con las credenciales necesarias.")
-
-secrets = toml.load(secrets_path)["secrets"]
-
 # Configuración del servidor y correo
-SMTP_SERVER = secrets["smtp_server"]
-SMTP_PORT = secrets["smtp_port"]
-EMAIL_USER = secrets["email_user"]
-EMAIL_PASSWORD = secrets["email_password"]
-NOTIFICATION_EMAIL = secrets["notification_email"]
-CSV_CONVOCATORIAS_FILE = secrets["csv_convocatorias_file"]
-REMOTE_HOST = secrets["remote_host"]
-REMOTE_USER = secrets["remote_user"]
-REMOTE_PASSWORD = secrets["remote_password"]
-REMOTE_PORT = secrets["remote_port"]
-REMOTE_DIR = secrets["remote_dir"]
-REMOTE_FILE = secrets["remote_file"]
-LOCAL_FILE = secrets["local_file"]
+SMTP_SERVER = st.secrets["smtp_server"]
+SMTP_PORT = st.secrets["smtp_port"]
+EMAIL_USER = st.secrets["email_user"]
+EMAIL_PASSWORD = st.secrets["email_password"]
+NOTIFICATION_EMAIL = st.secrets["notification_email"]
+CSV_CONVOCATORIAS_FILE = st.secrets["csv_convocatorias_file"]
+REMOTE_HOST = st.secrets["remote_host"]
+REMOTE_USER = st.secrets["remote_user"]
+REMOTE_PASSWORD = st.secrets["remote_password"]
+REMOTE_PORT = st.secrets["remote_port"]
+REMOTE_DIR = st.secrets["remote_dir"]
+REMOTE_FILE = st.secrets["remote_file"]
+LOCAL_FILE = st.secrets["local_file"]
+
+
 
 
 # Función para registrar datos en CSV con el formato correcto
