@@ -14,11 +14,8 @@ import paramiko
 import toml
 from pathlib import Path
 
-import toml
-from pathlib import Path
-
 # Cargar configuraciones desde config.toml
-config_path = Path("config.toml")
+config_path = Path(".streamlit/config.toml")
 if not config_path.exists():
     raise FileNotFoundError("El archivo 'config.toml' no existe. Por favor, créalo con las configuraciones necesarias.")
 
