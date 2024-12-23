@@ -28,8 +28,8 @@ remote_user = st.secrets["remote_user"]
 remote_password = st.secrets["remote_password"]
 remote_port = st.secrets["remote_port"]
 remote_dir = st.secrets["remote_dir"]
-REMOTE_FILE = st.secrets["REMOTE_FILE"]
-LOCAL_FILE = st.secrets["LOCAL_FILE"]
+remote_file_cor = st.secrets["remote_file_cor"]
+local_file_cor = st.secrets["local_file_cor"]
 
 
 
@@ -40,7 +40,7 @@ def recibir_archivo_remoto():
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(remote_host, port=remote_port, username=remote_user, password=remote_password)
         sftp = ssh.open_sftp()
-        sftp.get(f"{remote_dir}/{REMOTE_FILE}", LOCAL_FILE)
+        sftp.get(f"{remote_dir}/{remote_file_cor}", local_file_cor)
         sftp.close()
         ssh.close()
         print("Archivo sincronizado correctamente.")
@@ -55,7 +55,7 @@ def enviar_archivo_remoto():
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(remote_host, port=remote_port, username=remote_user, password=remote_password)
         sftp = ssh.open_sftp()
-        sftp.put(LOCAL_FILE, f"{remote_dir}/{REMOTE_FILE}")
+        sftp.put(local_file_cor, f"{remote_dir}/{remote_file_cor}")
         sftp.close()
         ssh.close()
         print("Archivo subido al servidor remoto.")
@@ -143,9 +143,9 @@ if st.button("Enviar archivo"):
             df = pd.DataFrame(data)
 
             try:
-                existing_df = pd.read_csv(LOCAL_FILE) if Path(LOCAL_FILE).exists() else pd.DataFrame()
+                existing_df = pd.read_csv(local_file_cor) if Path(local_file_cor).exists() else pd.DataFrame()
                 updated_df = pd.concat([existing_df, df], ignore_index=True)
-                updated_df.to_csv(LOCAL_FILE, index=False)
+                updated_df.to_csv(local_file_cor, index=False)
                 enviar_archivo_remoto()  # Subir CSV actualizado al servidor
 
                 # Enviar correos al usuario y al administrador con el archivo adjunto
