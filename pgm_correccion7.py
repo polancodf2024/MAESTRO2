@@ -18,16 +18,16 @@ import toml
 config = toml.load(".streamlit/config.toml")
 
 # Configuración del servidor y correo
-SMTP_SERVER = st.secrets["smtp_server"]
-SMTP_PORT = st.secrets["smtp_port"]
-EMAIL_USER = st.secrets["email_user"]
-EMAIL_PASSWORD = st.secrets["email_password"]
-NOTIFICATION_EMAIL = st.secrets["notification_email"]
-REMOTE_HOST = st.secrets["remote_host"]
-REMOTE_USER = st.secrets["remote_user"]
-REMOTE_PASSWORD = st.secrets["remote_password"]
-REMOTE_PORT = st.secrets["remote_port"]
-REMOTE_DIR = st.secrets["remote_dir"]
+smtp_server = st.secrets["smtp_server"]
+smtp_port = st.secrets["smtp_port"]
+email_user = st.secrets["email_user"]
+email_password = st.secrets["email_password"]
+notification_email = st.secrets["notification_email"]
+remote_host = st.secrets["remote_host"]
+remote_user = st.secrets["remote_user"]
+remote_password = st.secrets["remote_password"]
+remote_port = st.secrets["remote_port"]
+remote_dir = st.secrets["remote_dir"]
 REMOTE_FILE = "REMOTE FILE"
 LOCAL_FILE = "LOCAL_FILE"
 
@@ -38,9 +38,9 @@ def recibir_archivo_remoto():
     try:
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(REMOTE_HOST, port=REMOTE_PORT, username=REMOTE_USER, password=REMOTE_PASSWORD)
+        ssh.connect(remote_host, port=remote_remote_port, username=remote_user, password=remote_password)
         sftp = ssh.open_sftp()
-        sftp.get(f"{REMOTE_DIR}/{REMOTE_FILE}", LOCAL_FILE)
+        sftp.get(f"{remote_dir}/{REMOTE_FILE}", LOCAL_FILE)
         sftp.close()
         ssh.close()
         print("Archivo sincronizado correctamente.")
@@ -53,9 +53,9 @@ def enviar_archivo_remoto():
     try:
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(REMOTE_HOST, port=REMOTE_PORT, username=REMOTE_USER, password=REMOTE_PASSWORD)
+        ssh.connect(remote_host, port=remote_port, username=remote_user, password=remote_password)
         sftp = ssh.open_sftp()
-        sftp.put(LOCAL_FILE, f"{REMOTE_DIR}/{REMOTE_FILE}")
+        sftp.put(LOCAL_FILE, f"{remote_dir}/{REMOTE_FILE}")
         sftp.close()
         ssh.close()
         print("Archivo subido al servidor remoto.")
@@ -66,7 +66,7 @@ def enviar_archivo_remoto():
 # Función para enviar correos con archivo adjunto
 def send_email_with_attachment(email_recipient, subject, body, attachment_path):
     mensaje = MIMEMultipart()
-    mensaje['From'] = EMAIL_USER
+    mensaje['From'] = email_user
     mensaje['To'] = email_recipient
     mensaje['Subject'] = subject
     mensaje.attach(MIMEText(body, 'plain'))
@@ -84,10 +84,10 @@ def send_email_with_attachment(email_recipient, subject, body, attachment_path):
 
     # Enviar el correo
     context = ssl.create_default_context()
-    with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+    with smtplib.SMTP(smtp_server, smtp_port) as server:
         server.starttls(context=context)
-        server.login(EMAIL_USER, EMAIL_PASSWORD)
-        server.sendmail(EMAIL_USER, email_recipient, mensaje.as_string())
+        server.login(email_user, email_password)
+        server.sendmail(email_user, email_recipient, mensaje.as_string())
 
 # Sincronización automática del archivo remoto al inicio
 try:
@@ -157,7 +157,7 @@ if st.button("Enviar archivo"):
                 )
 
                 send_email_with_attachment(
-                    email_recipient=NOTIFICATION_EMAIL,
+                    email_recipient=notification_email,
                     subject="Nuevo archivo recibido",
                     body=f"Se ha recibido un archivo de {nombre_completo} ({email}).\nServicios solicitados: {', '.join(servicios_solicitados)}.",
                     attachment_path=file_name
