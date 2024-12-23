@@ -38,7 +38,7 @@ def recibir_archivo_remoto():
     try:
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(remote_host, port=remote_remote_port, username=remote_user, password=remote_password)
+        ssh.connect(remote_host, port=remote_port, username=remote_user, password=remote_password)
         sftp = ssh.open_sftp()
         sftp.get(f"{remote_dir}/{REMOTE_FILE}", LOCAL_FILE)
         sftp.close()
