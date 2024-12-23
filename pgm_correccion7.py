@@ -28,7 +28,7 @@ remote_user = st.secrets["remote_user"]
 remote_password = st.secrets["remote_password"]
 remote_port = st.secrets["remote_port"]
 remote_dir = st.secrets["remote_dir"]
-REMOTE_FILE = st.secrets["REMOTE FILE"]
+REMOTE_FILE = st.secrets["REMOTE_FILE"]
 LOCAL_FILE = st.secrets["LOCAL_FILE"]
 
 
