@@ -9,6 +9,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
 
+import toml
 
 # Leer configuraciones locales desde config.toml
 config = toml.load(".streamlit/config.toml")
