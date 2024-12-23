@@ -14,26 +14,15 @@ import paramiko
 import toml
 from pathlib import Path
 
-# Cargar configuraciones desde config.toml
-config_path = Path(".streamlit/config.toml")
-if not config_path.exists():
-    raise FileNotFoundError("El archivo 'config.toml' no existe. Por favor, créalo con las configuraciones necesarias.")
-
-config = toml.load(config_path)["settings"]
-
-# Cargar credenciales desde secrets.toml
-secrets_path = Path("secrets.toml")
-if not secrets_path.exists():
-    raise FileNotFoundError("El archivo 'secrets.toml' no existe. Por favor, créalo con las credenciales necesarias.")
-
-secrets = toml.load(secrets_path)["secrets"]
+# Leer configuraciones locales desde config.toml
+config = toml.load(".streamlit/config.toml")
 
 # Configuración general
-LOCAL_FILE = config["local_file"]
-REMOTE_FILE = config["remote_file"]
-CSV_CONVOCATORIAS_FILE = config["csv_file"]
-LOGO_FILE = config["logo_file"]
-TIMEZONE = config["timezone"]
+LOCAL_FILE = secrets["local_file"]
+REMOTE_FILE = secrets["remote_file"]
+CSV_CONVOCATORIAS_FILE = secrets["csv_file"]
+LOGO_FILE = secrets["logo_file"]
+TIMEZONE = secrets["timezone"]
 
 # Configuración del servidor y correo
 SMTP_SERVER = secrets["smtp_server"]
