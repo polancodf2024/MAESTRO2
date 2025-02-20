@@ -92,6 +92,11 @@ except Exception as e:
     st.warning(str(e))
 
 # Solicitar contraseña al inicio
+# Mostrar el logo y título
+st.image("escudo_COLOR.jpg", width=150)
+st.title("Subir el archivo: registro_correccion.csv")
+
+
 PASSWORD = "Tt5plco5"
 input_password = st.text_input("Ingresa la contraseña para acceder:", type="password")
 if input_password != PASSWORD:
@@ -99,8 +104,8 @@ if input_password != PASSWORD:
     st.stop()
 
 # Mostrar el logo y título
-st.image("escudo_COLOR.jpg", width=150)
-st.title("Subir el archivo: registro_correccion.csv")
+#st.image("escudo_COLOR.jpg", width=150)
+#st.title("Subir el archivo: registro_correccion.csv")
 
 # Subida de archivo
 uploaded_csv = st.file_uploader("Selecciona el archivo para subir y reemplazar el existente", type=["csv"])
