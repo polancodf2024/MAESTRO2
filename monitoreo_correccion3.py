@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import paramiko
+import toml
 
 # Verifica si las claves existen en st.secrets
 if "smtp_server" not in st.secrets:
@@ -20,6 +21,9 @@ else:
     local_file_cor = st.secrets["local_file_cor"]    # Definir local_file_cor
     remote_file_csv = st.secrets["remote_file_csv"]  # Definir remote_file_csv
     local_file_csv = st.secrets["local_file_csv"]    # Definir local_file_csv
+
+# Leer configuraciones locales desde config.toml
+config = toml.load(".streamlit/config.toml")
 
 # Función para descargar archivo remoto
 def recibir_archivo_remoto(remote_file, local_file):
