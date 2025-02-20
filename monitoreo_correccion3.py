@@ -1,45 +1,69 @@
 import streamlit as st
 import pandas as pd
 import paramiko
+from pathlib import Path
+import smtplib
+import ssl
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email import encoders
+from datetime import datetime
+import pytz
 import toml
 
-# Verifica si las claves existen en st.secrets
-if "smtp_server" not in st.secrets:
-    st.error("La clave 'smtp_server' no está en st.secrets. Verifica tu archivo secrets.toml.")
-else:
-    smtp_server = st.secrets["smtp_server"]
-    smtp_port = st.secrets["smtp_port"]
-    email_user = st.secrets["email_user"]
-    email_password = st.secrets["email_password"]
-    notification_email = st.secrets["notification_email"]
-    remote_host = st.secrets["remote_host"]
-    remote_user = st.secrets["remote_user"]
-    remote_password = st.secrets["remote_password"]
-    remote_port = st.secrets["remote_port"]
-    remote_dir = st.secrets["remote_dir"]
-    remote_file_cor = st.secrets["remote_file_cor"]  # Definir remote_file_cor
-    local_file_cor = st.secrets["local_file_cor"]    # Definir local_file_cor
-    remote_file_csv = st.secrets["remote_file_csv"]  # Definir remote_file_csv
-    local_file_csv = st.secrets["local_file_csv"]    # Definir local_file_csv
+
 
 # Leer configuraciones locales desde config.toml
 config = toml.load(".streamlit/config.toml")
-st.write("Claves disponibles en st.secrets:", list(st.secrets.keys()))
+
+# Configuración del servidor y correo
+smtp_server = st.secrets["smtp_server"]
+smtp_port = st.secrets["smtp_port"]
+email_user = st.secrets["email_user"]
+email_password = st.secrets["email_password"]
+notification_email = st.secrets["notification_email"]
+remote_host = st.secrets["remote_host"]
+remote_user = st.secrets["remote_user"]
+remote_password = st.secrets["remote_password"]
+remote_port = st.secrets["remote_port"]
+remote_dir = st.secrets["remote_dir"]
+remote_file_cor = st.secrets["remote_file_cor"]
+local_file_cor = st.secrets["local_file_cor"]
+
+
+
 # Función para descargar archivo remoto
-def recibir_archivo_remoto(remote_file, local_file):
+def recibir_archivo_remoto_cor():
     try:
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(remote_host, port=remote_port, username=remote_user, password=remote_password)
         sftp = ssh.open_sftp()
-        sftp.get(f"{remote_dir}/{remote_file}", local_file)
+        sftp.get(f"{remote_dir}/{remote_file_cor}", local_file_cor)
         sftp.close()
         ssh.close()
-        print(f"Archivo {remote_file} sincronizado correctamente.")
+        print("Archivo sincronizado correctamente.")
     except Exception as e:
-        st.error(f"Error al sincronizar {remote_file} con el servidor remoto.")
+        st.error("Error al sincronizar con el servidor remoto.")
         st.error(str(e))
 
+
+# Función para subir archivo al servidor remoto
+def enviar_archivo_remoto():
+    try:
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(remote_host, port=remote_port, username=remote_user, password=remote_password)
+        sftp = ssh.open_sftp()
+        sftp.put(local_file_cor, f"{remote_dir}/{remote_file_cor}")
+        sftp.close()
+        ssh.close()
+        print("Archivo subido al servidor remoto.")
+    except Exception as e:
+        st.error("Error al subir el archivo al servidor remoto.")
+        st.error(str(e))
+ 
 # Función para contar registros con estado "Terminado"
 def contar_terminados(archivo):
     try:
@@ -62,16 +86,13 @@ st.image("escudo_COLOR.jpg", width=150)  # Mostrar el logo
 st.title("Productividad OASIS")  # Cambiar el título
 
 # Descargar archivos remotos
-recibir_archivo_remoto(remote_file_cor, local_file_cor)  # Descargar registro_correccion.csv
-recibir_archivo_remoto(remote_file_csv, local_file_csv)  # Descargar registro_convocatorias.csv
+recibir_archivo_remoto_cor()  # Descargar registro_correccion.csv
+
 
 # Contar los registros "Terminados" en ambos archivos
 total_terminados_cor = contar_terminados(local_file_cor)
-total_terminados_conv = contar_terminados(local_file_csv)
 
 # Mostrar los resultados
 if total_terminados_cor is not None:
     st.write(f"Total de registros con estado 'Terminado' en {local_file_cor}: {total_terminados_cor}")
 
-if total_terminados_conv is not None:
-    st.write(f"Total de registros con estado 'Terminado' en {local_file_csv}: {total_terminados_conv}")
