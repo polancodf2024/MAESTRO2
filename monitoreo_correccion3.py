@@ -24,7 +24,7 @@ else:
 
 # Leer configuraciones locales desde config.toml
 config = toml.load(".streamlit/config.toml")
-
+st.write("Claves disponibles en st.secrets:", list(st.secrets.keys()))
 # Función para descargar archivo remoto
 def recibir_archivo_remoto(remote_file, local_file):
     try:
