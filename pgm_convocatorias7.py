@@ -154,7 +154,7 @@ def enviar_confirmacion_usuario(correo, nombre):
         st.error(f"Error al enviar confirmación al usuario: {e}")
 
 # Añadir logo y título
-st.image("escudo_COLOR.jpg", width=100)
+st.image("escudo_COLOR.jpg", width=200)
 st.title("Registro Para Recibir Convocatorias")
 
 # Menú principal
