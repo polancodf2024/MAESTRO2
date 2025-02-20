@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import paramiko
 
-# Configuración del servidor y correo
+# Verifica si las claves existen en st.secrets
 if "smtp_server" not in st.secrets:
     st.error("La clave 'smtp_server' no está en st.secrets. Verifica tu archivo secrets.toml.")
 else:
@@ -16,10 +16,10 @@ else:
     remote_password = st.secrets["remote_password"]
     remote_port = st.secrets["remote_port"]
     remote_dir = st.secrets["remote_dir"]
-    remote_file_cor = st.secrets["remote_file_cor"]
-    local_file_cor = st.secrets["local_file_cor"]
-    remote_file_csv = st.secrets["remote_file_csv"]
-    local_file_csv = st.secrets["local_file_csv"]
+    remote_file_cor = st.secrets["remote_file_cor"]  # Definir remote_file_cor
+    local_file_cor = st.secrets["local_file_cor"]    # Definir local_file_cor
+    remote_file_csv = st.secrets["remote_file_csv"]  # Definir remote_file_csv
+    local_file_csv = st.secrets["local_file_csv"]    # Definir local_file_csv
 
 # Función para descargar archivo remoto
 def recibir_archivo_remoto(remote_file, local_file):
