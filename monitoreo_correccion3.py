@@ -1,30 +1,25 @@
 import streamlit as st
 import pandas as pd
 import paramiko
-import toml
-
-# Leer configuraciones locales desde .secrets.toml
-config = toml.load(".streamlit/secrets.toml")
 
 # Configuración del servidor y correo
-smtp_server = st.secrets["smtp_server"]
-smtp_port = st.secrets["smtp_port"]
-email_user = st.secrets["email_user"]
-email_password = st.secrets["email_password"]
-notification_email = st.secrets["notification_email"]
-remote_host = st.secrets["remote_host"]
-remote_user = st.secrets["remote_user"]
-remote_password = st.secrets["remote_password"]
-remote_port = st.secrets["remote_port"]
-remote_dir = st.secrets["remote_dir"]
-
-# Archivos de corrección
-remote_file_cor = st.secrets["remote_file_cor"]
-local_file_cor = st.secrets["local_file_cor"]
-
-# Archivos de convocatorias
-remote_file_conv = st.secrets["remote_file_csv"]  # registro_convocatorias.csv
-local_file_conv = st.secrets["local_file_csv"]  # registro_convocatorias.csv
+if "smtp_server" not in st.secrets:
+    st.error("La clave 'smtp_server' no está en st.secrets. Verifica tu archivo secrets.toml.")
+else:
+    smtp_server = st.secrets["smtp_server"]
+    smtp_port = st.secrets["smtp_port"]
+    email_user = st.secrets["email_user"]
+    email_password = st.secrets["email_password"]
+    notification_email = st.secrets["notification_email"]
+    remote_host = st.secrets["remote_host"]
+    remote_user = st.secrets["remote_user"]
+    remote_password = st.secrets["remote_password"]
+    remote_port = st.secrets["remote_port"]
+    remote_dir = st.secrets["remote_dir"]
+    remote_file_cor = st.secrets["remote_file_cor"]
+    local_file_cor = st.secrets["local_file_cor"]
+    remote_file_csv = st.secrets["remote_file_csv"]
+    local_file_csv = st.secrets["local_file_csv"]
 
 # Función para descargar archivo remoto
 def recibir_archivo_remoto(remote_file, local_file):
@@ -64,15 +59,15 @@ st.title("Productividad OASIS")  # Cambiar el título
 
 # Descargar archivos remotos
 recibir_archivo_remoto(remote_file_cor, local_file_cor)  # Descargar registro_correccion.csv
-recibir_archivo_remoto(remote_file_conv, local_file_conv)  # Descargar registro_convocatorias.csv
+recibir_archivo_remoto(remote_file_csv, local_file_csv)  # Descargar registro_convocatorias.csv
 
 # Contar los registros "Terminados" en ambos archivos
 total_terminados_cor = contar_terminados(local_file_cor)
-total_terminados_conv = contar_terminados(local_file_conv)
+total_terminados_conv = contar_terminados(local_file_csv)
 
 # Mostrar los resultados
 if total_terminados_cor is not None:
     st.write(f"Total de registros con estado 'Terminado' en {local_file_cor}: {total_terminados_cor}")
 
 if total_terminados_conv is not None:
-    st.write(f"Total de registros con estado 'Terminado' en {local_file_conv}: {total_terminados_conv}")
+    st.write(f"Total de registros con estado 'Terminado' en {local_file_csv}: {total_terminados_conv}")
