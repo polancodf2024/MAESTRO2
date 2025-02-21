@@ -30,10 +30,11 @@ remote_port = st.secrets["remote_port"]
 remote_dir = st.secrets["remote_dir"]
 remote_file_cor = st.secrets["remote_file_cor"]
 local_file_cor = st.secrets["local_file_cor"]
+remote_file_csv = st.secrets["remote_file_csv"]  # Definir remote_file_csv
+local_file_csv = st.secrets["local_file_csv"]    # Definir local_file_csv
 
 
-
-# Función para descargar archivo remoto
+# Función para descargar archivo remoto correcciones
 def recibir_archivo_remoto_cor():
     try:
         ssh = paramiko.SSHClient()
@@ -48,21 +49,21 @@ def recibir_archivo_remoto_cor():
         st.error("Error al sincronizar con el servidor remoto.")
         st.error(str(e))
 
-
-# Función para subir archivo al servidor remoto
-def enviar_archivo_remoto():
+# Función para descargar archivo remoto convocatorias
+def recibir_archivo_remoto_con():
     try:
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(remote_host, port=remote_port, username=remote_user, password=remote_password)
         sftp = ssh.open_sftp()
-        sftp.put(local_file_cor, f"{remote_dir}/{remote_file_cor}")
+        sftp.get(f"{remote_dir}/{remote_file_csv}", local_file_csv)
         sftp.close()
         ssh.close()
-        print("Archivo subido al servidor remoto.")
+        print("Archivo sincronizado correctamente.")
     except Exception as e:
-        st.error("Error al subir el archivo al servidor remoto.")
+        st.error("Error al sincronizar con el servidor remoto.")
         st.error(str(e))
+
  
 # Función para contar registros con estado "Terminado"
 def contar_terminados(archivo):
@@ -87,12 +88,18 @@ st.title("Productividad OASIS")  # Cambiar el título
 
 # Descargar archivos remotos
 recibir_archivo_remoto_cor()  # Descargar registro_correccion.csv
+recibir_archivo_remoto_con()  # Descargar registro_convocatorias.csv
+
 
 
 # Contar los registros "Terminados" en ambos archivos
 total_terminados_cor = contar_terminados(local_file_cor)
+total_terminados_con = contar_terminados(local_file_csv)
+
 
 # Mostrar los resultados
 if total_terminados_cor is not None:
     st.write(f"Total de registros con estado 'Terminado' en {local_file_cor}: {total_terminados_cor}")
+if total_terminados_con is not None:
+    st.write(f"Total de registros con estado 'Terminado' en {local_file_csv}: {total_terminados_con}")    
 
