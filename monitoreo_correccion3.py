@@ -82,6 +82,24 @@ def contar_terminados(archivo):
         st.error(f"Error al leer el archivo {archivo}: {e}")
         return None
 
+# Función para contar registros con estado "Activo"
+def contar_activos(archivo):
+    try:
+        # Leer el archivo CSV, omitiendo filas con problemas
+        df = pd.read_csv(archivo, dtype=str, keep_default_na=False, quotechar='"', on_bad_lines='skip')
+        df = df.apply(lambda x: x.str.strip() if x.dtype == "object" else x)  # Eliminar espacios en blanco
+        if "Estado" in df.columns:
+            df["Estado"] = df["Estado"].str.lower()
+            activos = df[df["Estado"] == "activo"].shape[0]
+            return activos
+        else:
+            st.error(f"El archivo {archivo} no contiene una columna llamada 'Estado'.")
+            return None
+    except Exception as e:
+        st.error(f"Error al leer el archivo {archivo}: {e}")
+        return None
+
+
 # Interfaz de Streamlit
 st.image("escudo_COLOR.jpg", width=150)  # Mostrar el logo
 st.title("Productividad OASIS")  # Cambiar el título
@@ -95,11 +113,22 @@ recibir_archivo_remoto_con()  # Descargar registro_convocatorias.csv
 # Contar los registros "Terminados" en ambos archivos
 total_terminados_cor = contar_terminados(local_file_cor)
 total_terminados_con = contar_terminados(local_file_csv)
+total_activos_cor = contar_activos(local_file_cor)
+total_activos_con = contar_activos(local_file_csv)
 
 
 # Mostrar los resultados
+
+st.warning("Archivo Correcciones")  # Cambiar el título
+if total_activos_cor is not None:
+    st.write(f"Total de registros con estado 'Activo' en {local_file_cor}: {total_activos_cor}")
 if total_terminados_cor is not None:
     st.write(f"Total de registros con estado 'Terminado' en {local_file_cor}: {total_terminados_cor}")
+
+st.warning("Archivo Convocatorias")  # Cambiar el título
+if total_activos_con is not None:
+    st.write(f"Total de registros con estado 'Activo' en {local_file_csv}: {total_activos_con}")
 if total_terminados_con is not None:
     st.write(f"Total de registros con estado 'Terminado' en {local_file_csv}: {total_terminados_con}")    
+
 
