@@ -139,8 +139,7 @@ if st.button("Enviar archivo"):
                 "Nombre del Archivo": [file_name],
                 "Nombre del Artículo": [nombre_articulo],
                 "Servicios Solicitados": [", ".join(servicios_solicitados)],
-                "Estado": ["Activo"],
-                "Fecha Terminación": [""]
+                "Estado": ["Activo"]
             }
             df = pd.DataFrame(data)
 

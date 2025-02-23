@@ -55,15 +55,14 @@ def registrar_convocatoria(nombre, correo, numero_economico):
     fecha_hora = fecha_actual.strftime("%Y-%m-%d")
 
     estado = "Activo"
-    fecha_terminacion = ""
 
     # Encabezados y datos del registro
     encabezados = [
         "Fecha", "Nombre Completo", "Correo Electronico", 
-        "Numero Economico", "Estado", "Fecha de Terminacion"
+        "Numero Economico", "Estado"
     ]
     datos = [
-        fecha_hora, nombre, correo, numero_economico, estado, fecha_terminacion
+        fecha_hora, nombre, correo, numero_economico, estado
     ]
 
     # Guardar en el archivo CSV
@@ -92,7 +91,7 @@ def desuscribir_convocatoria(correo):
             for row in reader:
                 if row[2] == correo:  # Comparar el correo
                     row[4] = "Inactivo"  # Cambiar estado a "Inactivo"
-                    row[5] = datetime.now(pytz.timezone("America/Mexico_City")).strftime("%Y-%m-%d")  # Fecha de terminación
+#                    row[5] = datetime.now(pytz.timezone("America/Mexico_City")).strftime("%Y-%m-%d")  # Fecha de terminación
                     desuscrito = True
                 registros.append(row)
 
