@@ -10,9 +10,7 @@ import csv
 from datetime import datetime
 import pytz
 import paramiko
-
 import toml
-from pathlib import Path
 
 # Leer configuraciones locales desde config.toml
 config = toml.load(".streamlit/config.toml")
@@ -32,8 +30,21 @@ REMOTE_DIR = st.secrets["remote_dir"]
 REMOTE_FILE = st.secrets["remote_file"]
 LOCAL_FILE = st.secrets["local_file"]
 
+# Función para limpiar el archivo CSV de caracteres \r
+def limpiar_csv():
+    try:
+        # Leer el archivo CSV y eliminar los caracteres \r
+        with open(LOCAL_FILE, 'r', encoding='utf-8') as file:
+            lines = file.readlines()
 
-
+        # Escribir el archivo CSV sin los caracteres \r
+        with open(LOCAL_FILE, 'w', newline='', encoding='utf-8') as file:
+            for line in lines:
+                # Eliminar \r y asegurarse de que cada línea termine con \n
+                cleaned_line = line.replace('\r', '').rstrip() + '\n'
+                file.write(cleaned_line)
+    except Exception as e:
+        st.error(f"Error al limpiar el archivo CSV: {e}")
 
 # Función para registrar datos en CSV con el formato correcto
 def registrar_convocatoria(nombre, correo, numero_economico):
@@ -41,14 +52,14 @@ def registrar_convocatoria(nombre, correo, numero_economico):
     fecha_actual = datetime.now(tz_mexico)
 
     # Formato de fecha y hora como "2024-11-20 14:55:35"
-    fecha_hora = fecha_actual.strftime("%Y-%m-%d %H:%M:%S")
+    fecha_hora = fecha_actual.strftime("%Y-%m-%d")
 
     estado = "Activo"
     fecha_terminacion = ""
 
     # Encabezados y datos del registro
     encabezados = [
-        "Fecha y Hora", "Nombre Completo", "Correo Electronico", 
+        "Fecha", "Nombre Completo", "Correo Electronico", 
         "Numero Economico", "Estado", "Fecha de Terminacion"
     ]
     datos = [
@@ -69,6 +80,9 @@ def registrar_convocatoria(nombre, correo, numero_economico):
 # Función para desuscribir a un usuario
 def desuscribir_convocatoria(correo):
     try:
+        # Limpiar el archivo CSV antes de procesarlo
+        limpiar_csv()
+
         # Leer los datos actuales del archivo CSV
         registros = []
         desuscrito = False
@@ -78,7 +92,7 @@ def desuscribir_convocatoria(correo):
             for row in reader:
                 if row[2] == correo:  # Comparar el correo
                     row[4] = "Inactivo"  # Cambiar estado a "Inactivo"
-                    row[5] = datetime.now(pytz.timezone("America/Mexico_City")).strftime("%Y-%m-%d %H:%M:%S")  # Fecha de terminación
+                    row[5] = datetime.now(pytz.timezone("America/Mexico_City")).strftime("%Y-%m-%d")  # Fecha de terminación
                     desuscrito = True
                 registros.append(row)
 
@@ -190,4 +204,3 @@ elif opcion == "Desuscribirse":
             st.error("Por favor, ingresa tu correo electrónico.")
         else:
             desuscribir_convocatoria(correo_desuscripcion)
-
