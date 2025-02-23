@@ -106,6 +106,7 @@ nombre_completo = st.text_input("Nombre completo del autor")
 email = st.text_input("Correo electrónico del autor")
 email_confirmacion = st.text_input("Confirma tu correo electrónico")
 numero_economico = st.text_input("Número económico del autor")
+nombre_articulo = st.text_input("Nombre articulo")
 
 # Selección de servicios
 servicios_solicitados = st.multiselect(
@@ -129,13 +130,14 @@ if st.button("Enviar archivo"):
 
             # Registrar transacción en el archivo CSV
             tz_mexico = pytz.timezone("America/Mexico_City")
-            fecha_hora = datetime.now(tz_mexico).strftime("%Y-%m-%d %H:%M:%S")
+            fecha_hora = datetime.now(tz_mexico).strftime("%Y-%m-%d")
             data = {
                 "Nombre": [nombre_completo],
                 "Email": [email],
                 "Número Económico": [numero_economico],  # Añadido el campo de "Número Económico" después de "Email"
-                "Fecha y Hora": [fecha_hora],
+                "Fecha": [fecha_hora],
                 "Nombre del Archivo": [file_name],
+                "Nombre del Artículo": [nombre_articulo],
                 "Servicios Solicitados": [", ".join(servicios_solicitados)],
                 "Estado": ["Activo"],
                 "Fecha Terminación": [""]
