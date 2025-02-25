@@ -3,6 +3,7 @@ import pandas as pd
 import paramiko
 import toml
 from datetime import datetime, timedelta
+import subprocess  # Para ejecutar comandos de Linux
 
 # Leer configuraciones locales desde config.toml
 config = toml.load(".streamlit/config.toml")
@@ -72,6 +73,19 @@ def calcular_totales(df):
         return df["Estado"].value_counts().to_dict()
     return {}
 
+# Función para contar el total de registros usando wc -l
+def contar_registros_con_wc(archivo):
+    try:
+        # Ejecutar el comando wc -l y capturar la salida
+        resultado = subprocess.run(["wc", "-l", archivo], capture_output=True, text=True)
+        # Extraer el número de líneas (el primer valor en la salida)
+        num_lineas = int(resultado.stdout.split()[0])
+        # Restar 1 para excluir la fila de encabezados
+        return num_lineas - 1
+    except Exception as e:
+        st.error(f"Error al contar registros con wc -l: {e}")
+        return 0
+
 # Interfaz de Streamlit
 st.image("escudo_COLOR.jpg", width=150)
 st.title("Productividad OASIS")
@@ -93,9 +107,9 @@ if df_cor is not None:
         st.write(f"Revisiones con estado: {estado}: {cantidad}")
     st.write(f"Total revisiones de los últimos seis meses: {sum(totales_cor.values())}")
 
-df_cor_total = extraer_datos(local_file_cor, es_correccion=True, filtrar_fechas=False)
-if df_cor_total is not None:
-    st.write(f"Total revisiones desde su fundación: {len(df_cor_total)}")
+# Contar el total de registros en el archivo de correcciones usando wc -l
+total_registros_cor = contar_registros_con_wc(local_file_cor)
+st.write(f"Total revisiones desde su fundación: {total_registros_cor}")
 
 st.warning("Sistema de suscriptores a convocatorias")
 df_con = extraer_datos(local_file_csv)
@@ -106,6 +120,6 @@ if df_con is not None:
         st.write(f"Suscriptores con estado: {estado}: {cantidad}")
     st.write(f"Total suscriptores de los últimos seis meses: {sum(totales_con.values())}")
 
-df_con_total = extraer_datos(local_file_csv, filtrar_fechas=False)
-if df_con_total is not None:
-    st.write(f"Total suscriptores desde su fundación: {len(df_con_total)}")
+# Contar el total de registros en el archivo de convocatorias usando wc -l
+total_registros_con = contar_registros_con_wc(local_file_csv)
+st.write(f"Total suscriptores desde su fundación: {total_registros_con}")
