@@ -80,28 +80,30 @@ recibir_archivo_remoto(remote_file_cor, local_file_cor)
 recibir_archivo_remoto(remote_file_csv, local_file_csv)
 
 # Extraer y mostrar datos
-st.warning("Sistema de Correcciones de Estilo")
+st.warning("Sistema de revisión de estilo")
 df_cor = extraer_datos(local_file_cor, es_correccion=True)
 if df_cor is not None:
+    df_cor.index = df_cor.index + 1
     st.dataframe(df_cor)
     totales_cor = calcular_totales(df_cor)
     for estado, cantidad in totales_cor.items():
-        st.write(f"Correcciones {estado}: {cantidad}")
-    st.write(f"Total correcciones últimos 6 meses: {sum(totales_cor.values()) - 1}")
+        st.write(f"Revisiones con estado: {estado}: {cantidad}")
+    st.write(f"Total revisiones de los últimos seis meses: {sum(totales_cor.values()) - 0}")
 
 df_cor_total = extraer_datos(local_file_cor, es_correccion=True)
 if df_cor_total is not None:
-    st.write(f"Gran total de correcciones: {len(df_cor_total) - 1}")
+    st.write(f"Total revisiones desde su fundación: {len(df_cor_total) - 0}")
 
-st.warning("Sistema de Suscriptores a Convocatorias")
+st.warning("Sistema de suscriptores a convocatorias")
 df_con = extraer_datos(local_file_csv)
 if df_con is not None:
+    df_cor.index = df_cor.index + 1
     totales_con = calcular_totales(df_con)
     for estado, cantidad in totales_con.items():
-        st.write(f"Suscriptores a Convocatorias {estado}: {cantidad}")
-    st.write(f"Total suscriptores a convocatorias últimos 6 meses: {sum(totales_con.values()) - 1}")
+        st.write(f"Suscriptores con estado: {estado}: {cantidad}")
+    st.write(f"Total suscriptores de los últimos seis meses: {sum(totales_con.values()) - 0}")
 
 df_con_total = extraer_datos(local_file_csv)
 if df_con_total is not None:
-    st.write(f"Gran total de suscriptores a convocatorias: {len(df_con_total) - 1}")
+    st.write(f"Total suscriptores desde su fundación: {len(df_con_total) - 0}")
 
