@@ -99,19 +99,19 @@ except Exception as e:
 
 # Mostrar logo y título
 st.image("escudo_COLOR.jpg", width=150)
-st.title("Revisión de Artículos Científicos")
+st.title("Revisión de artículos científicos")
 
 # Solicitar información del usuario
 nombre_completo = st.text_input("Nombre completo del autor")
 email = st.text_input("Correo electrónico del autor")
 email_confirmacion = st.text_input("Confirma tu correo electrónico")
 numero_economico = st.text_input("Número económico del autor")
-nombre_articulo = st.text_input("Nombre articulo")
+nombre_articulo = st.text_input("Título del articulo")
 
 # Selección de servicios
 servicios_solicitados = st.multiselect(
     "¿Qué servicios solicita?",
-    ["Verificación de originalidad", "Parafraseo", "Reporte de similitudes", "Factor IA", "Revisión de estilo", "Traducción parcial"]
+    ["Detección de plagio", "Detección de escritura hecha por IA", "Corrección ortográfica y parafraseo en ingles", "Corrección ortográfica y parafraseo en ingles"]
 )
 
 # Subida de archivo
@@ -134,11 +134,11 @@ if st.button("Enviar archivo"):
             data = {
                 "Nombre": [nombre_completo],
                 "Email": [email],
-                "Número Económico": [numero_economico],  # Añadido el campo de "Número Económico" después de "Email"
+                "Número económico": [numero_economico],  # Añadido el campo de "Número Económico" después de "Email"
                 "Fecha": [fecha_hora],
-                "Nombre del Archivo": [file_name],
-                "Nombre del Artículo": [nombre_articulo],
-                "Servicios Solicitados": [", ".join(servicios_solicitados)],
+                "Nombre del archivo": [file_name],
+                "Nombre del artículo": [nombre_articulo],
+                "Servicios solicitados": [", ".join(servicios_solicitados)],
                 "Estado": ["Activo"]
             }
             df = pd.DataFrame(data)

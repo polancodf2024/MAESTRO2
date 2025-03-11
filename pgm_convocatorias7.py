@@ -58,8 +58,8 @@ def registrar_convocatoria(nombre, correo, numero_economico):
 
     # Encabezados y datos del registro
     encabezados = [
-        "Fecha", "Nombre Completo", "Correo Electronico", 
-        "Numero Economico", "Estado"
+        "Fecha", "Nombre completo", "Correo electronico", 
+        "Numero economico", "Estado"
     ]
     datos = [
         fecha_hora, nombre, correo, numero_economico, estado
@@ -168,7 +168,7 @@ def enviar_confirmacion_usuario(correo, nombre):
 
 # Añadir logo y título
 st.image("escudo_COLOR.jpg", width=200)
-st.title("Registro Para Recibir Convocatorias")
+st.title("Registro para recibir convocatorias")
 
 # Menú principal
 opcion = st.radio("Seleccione una opción", ["Inscribirse", "Desuscribirse"])
@@ -176,9 +176,9 @@ opcion = st.radio("Seleccione una opción", ["Inscribirse", "Desuscribirse"])
 if opcion == "Inscribirse":
     # Solicitar información del usuario
     nombre_completo = st.text_input("Nombre completo")
-    correo_electronico = st.text_input("Correo Electrónico")
-    correo_electronico_confirmacion = st.text_input("Confirma tu Correo Electrónico")
-    numero_economico = st.text_input("Número Económico")
+    correo_electronico = st.text_input("Correo electrónico")
+    correo_electronico_confirmacion = st.text_input("Confirma tu correo electrónico")
+    numero_economico = st.text_input("Número económico")
 
     # Procesar envío
     if st.button("Enviar"):
