@@ -111,7 +111,7 @@ nombre_articulo = st.text_input("Título del artículo")
 # Selección de servicios
 servicios_solicitados = st.multiselect(
     "¿Qué servicios solicita?",
-    ["Detección de plagio", "Detección de escritura hecha por IA", "Corrección ortográfica y parafraseo en ingles", "Corrección ortográfica y parafraseo en español"]
+    ["Detección de plagio", "Detección de escritura hecha por IA", "Corrección ortográfica y parafraseo en inglés", "Corrección ortográfica y parafraseo en español"]
 )
 
 # Subida de archivo
