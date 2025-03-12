@@ -106,12 +106,12 @@ nombre_completo = st.text_input("Nombre completo del autor")
 email = st.text_input("Correo electrónico del autor")
 email_confirmacion = st.text_input("Confirma tu correo electrónico")
 numero_economico = st.text_input("Número económico del autor")
-nombre_articulo = st.text_input("Título del articulo")
+nombre_articulo = st.text_input("Título del artículo")
 
 # Selección de servicios
 servicios_solicitados = st.multiselect(
     "¿Qué servicios solicita?",
-    ["Detección de plagio", "Detección de escritura hecha por IA", "Corrección ortográfica y parafraseo en ingles", "Corrección ortográfica y parafraseo en ingles"]
+    ["Detección de plagio", "Detección de escritura hecha por IA", "Corrección ortográfica y parafraseo en ingles", "Corrección ortográfica y parafraseo en español"]
 )
 
 # Subida de archivo
