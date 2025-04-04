@@ -11,8 +11,7 @@ from email import encoders
 from datetime import datetime
 import pytz
 import toml
-
-
+import csv  # Importación añadida para manejo de comillas en CSV
 
 # Leer configuraciones locales desde config.toml
 config = toml.load(".streamlit/config.toml")
@@ -30,8 +29,8 @@ remote_port = st.secrets["remote_port"]
 remote_dir = st.secrets["remote_dir"]
 remote_file_cor = st.secrets["remote_file_cor"]
 local_file_cor = st.secrets["local_file_cor"]
-
-
+#remote_file_cor = "registro_correccion.csv"
+#local_file_cor = "registro_correccion.csv"
 
 # Función para descargar archivo remoto
 def recibir_archivo_remoto():
@@ -128,25 +127,44 @@ if st.button("Enviar archivo"):
             with open(file_name, "wb") as f:
                 f.write(uploaded_file.getbuffer())
 
+            # Definir orden de columnas
+            column_order = [
+                "Nombre", 
+                "Email", 
+                "Número económico", 
+                "Fecha", 
+                "Nombre del archivo", 
+                "Nombre del artículo", 
+                "Servicios solicitados", 
+                "Estado"
+            ]
+
             # Registrar transacción en el archivo CSV
             tz_mexico = pytz.timezone("America/Mexico_City")
             fecha_hora = datetime.now(tz_mexico).strftime("%Y-%m-%d")
             data = {
                 "Nombre": [nombre_completo],
                 "Email": [email],
-                "Número económico": [numero_economico],  # Añadido el campo de "Número Económico" después de "Email"
+                "Número económico": [numero_economico],
                 "Fecha": [fecha_hora],
                 "Nombre del archivo": [file_name],
                 "Nombre del artículo": [nombre_articulo],
                 "Servicios solicitados": [", ".join(servicios_solicitados)],
                 "Estado": ["Activo"]
             }
-            df = pd.DataFrame(data)
+
+            # Crear DataFrame asegurando el orden de columnas
+            df = pd.DataFrame(data, columns=column_order)
 
             try:
-                existing_df = pd.read_csv(local_file_cor) if Path(local_file_cor).exists() else pd.DataFrame()
+                # Leer archivo existente o crear uno nuevo con las columnas correctas
+                existing_df = pd.read_csv(local_file_cor) if Path(local_file_cor).exists() else pd.DataFrame(columns=column_order)
                 updated_df = pd.concat([existing_df, df], ignore_index=True)
-                updated_df.to_csv(local_file_cor, index=False)
+                updated_df = updated_df[column_order]  # Asegurar el orden de columnas
+                
+                # Guardar el CSV con comillas para todos los campos (o solo los necesarios)
+                updated_df.to_csv(local_file_cor, index=False, quoting=csv.QUOTE_ALL)  # Cambio clave aquí
+                
                 enviar_archivo_remoto()  # Subir CSV actualizado al servidor
 
                 # Enviar correos al usuario y al administrador con el archivo adjunto
@@ -168,4 +186,3 @@ if st.button("Enviar archivo"):
             except Exception as e:
                 st.error("Error al procesar el archivo o enviar correos.")
                 st.error(str(e))
-
