@@ -3,7 +3,7 @@ import pandas as pd
 import paramiko
 import toml
 from datetime import datetime, timedelta
-import subprocess  # Para ejecutar comandos de Linux
+import subprocess
 
 # Leer configuraciones locales desde config.toml
 config = toml.load(".streamlit/config.toml")
@@ -52,12 +52,22 @@ def extraer_datos(archivo, es_correccion=False, filtrar_fechas=True):
         df = df.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
         
         if es_correccion:
-            columnas = ["Fecha", "Nombre del Artículo", df.columns[-1]]
+            # Seleccionar columnas relevantes para correcciones
+            columnas = [
+                "Fecha", 
+                "Nombre", 
+                "Email", 
+                "Número económico", 
+                "Nombre del artículo", 
+                "Servicios solicitados", 
+                "Estado"
+            ]
+            df = df[columnas]
         else:
+            # Para archivos CSV normales (suscriptores)
             columnas = ["Fecha", df.columns[-1]]
-        
-        df = df[columnas]
-        df.columns = ["Fecha", "Nombre del Artículo", "Estado"] if es_correccion else ["Fecha", "Estado"]
+            df = df[columnas]
+            df.columns = ["Fecha", "Estado"]
         
         if filtrar_fechas:
             df = filtrar_ultimos_seis_meses(df)
@@ -67,21 +77,12 @@ def extraer_datos(archivo, es_correccion=False, filtrar_fechas=True):
         st.error(f"Error al leer {archivo}: {e}")
         return None
 
-# Función para calcular totales por estado
-def calcular_totales(df):
-    if df is not None:
-        return df["Estado"].value_counts().to_dict()
-    return {}
-
 # Función para contar el total de registros usando wc -l
 def contar_registros_con_wc(archivo):
     try:
-        # Ejecutar el comando wc -l y capturar la salida
         resultado = subprocess.run(["wc", "-l", archivo], capture_output=True, text=True)
-        # Extraer el número de líneas (el primer valor en la salida)
         num_lineas = int(resultado.stdout.split()[0])
-        # Restar 1 para excluir la fila de encabezados
-        return num_lineas - 1
+        return num_lineas - 1  # Restamos 1 por el encabezado
     except Exception as e:
         st.error(f"Error al contar registros con wc -l: {e}")
         return 0
@@ -96,30 +97,52 @@ st.write(f"Fecha actual: {fecha_actual}")
 recibir_archivo_remoto(remote_file_cor, local_file_cor)
 recibir_archivo_remoto(remote_file_csv, local_file_csv)
 
-# Extraer y mostrar datos
+# Sección de Revisiones de Estilo (modificada)
 st.warning("Sistema de revisión de estilo")
 df_cor = extraer_datos(local_file_cor, es_correccion=True)
 if df_cor is not None:
-    df_cor.index = df_cor.index + 1
-    st.dataframe(df_cor)
-    totales_cor = calcular_totales(df_cor)
-    for estado, cantidad in totales_cor.items():
-        st.write(f"Revisiones con estado: {estado}: {cantidad}")
-    st.write(f"Total revisiones de los últimos seis meses: {sum(totales_cor.values())}")
+    # Obtener conteos para los últimos 6 meses
+    totales_6meses = df_cor["Estado"].value_counts().to_dict()
+    
+    # Obtener conteos para todo el historial
+    df_historico = extraer_datos(local_file_cor, es_correccion=True, filtrar_fechas=False)
+    totales_historico = df_historico["Estado"].value_counts().to_dict()
+    total_registros_cor = contar_registros_con_wc(local_file_cor)
+    
+    # Mostrar estadísticas en columnas
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.subheader("Últimos 6 meses")
+        for estado, cantidad in totales_6meses.items():
+            st.metric(label=f"Estado: {estado}", value=cantidad)
+        st.metric(label="Total 6 meses", value=sum(totales_6meses.values()))
+    
+    with col2:
+        st.subheader("Histórico completo")
+        for estado, cantidad in totales_historico.items():
+            st.metric(label=f"Estado: {estado}", value=cantidad)
+        st.metric(label="Total histórico", value=total_registros_cor)
 
-# Contar el total de registros en el archivo de correcciones usando wc -l
-total_registros_cor = contar_registros_con_wc(local_file_cor)
-st.write(f"Total revisiones desde su fundación: {total_registros_cor}")
-
+# Sección de Suscriptores a Convocatorias (sin cambios)
 st.warning("Sistema de suscriptores a convocatorias")
 df_con = extraer_datos(local_file_csv)
 if df_con is not None:
-    df_con.index = df_con.index + 1
-    totales_con = calcular_totales(df_con)
-    for estado, cantidad in totales_con.items():
-        st.write(f"Suscriptores con estado: {estado}: {cantidad}")
-    st.write(f"Total suscriptores de los últimos seis meses: {sum(totales_con.values())}")
-
-# Contar el total de registros en el archivo de convocatorias usando wc -l
-total_registros_con = contar_registros_con_wc(local_file_csv)
-st.write(f"Total suscriptores desde su fundación: {total_registros_con}")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.subheader("Estadísticas por Estado")
+        totales_con = df_con["Estado"].value_counts().to_dict()
+        for estado, cantidad in totales_con.items():
+            st.metric(label=f"Estado: {estado}", value=cantidad)
+    
+    with col2:
+        st.subheader("Totales")
+        st.metric(
+            label="Últimos 6 meses", 
+            value=sum(totales_con.values())
+        )
+        total_registros_con = contar_registros_con_wc(local_file_csv)
+        st.metric(
+            label="Total desde fundación", 
+            value=total_registros_con
+        )
