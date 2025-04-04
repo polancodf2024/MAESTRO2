@@ -16,7 +16,7 @@ import re
 import unicodedata
 from typing import Optional
 
-# Leer configuraciones locales desde config.toml
+# Leeer configuraciones locales desde config.toml
 config = toml.load(".streamlit/config.toml")
 
 # Configuración del servidor y correo
