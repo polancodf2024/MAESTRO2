@@ -220,7 +220,7 @@ if st.button("Enviar archivo"):
 
             # Registrar transacción en el archivo CSV
             tz_mexico = pytz.timezone("America/Mexico_City")
-            fecha_hora = datetime.now(tz_mexico).strftime("%Y-%m-%d %H:%M:%S")
+            fecha_hora = datetime.now(tz_mexico).strftime("%Y-%m-%d")
             data = {
                 "Nombre": [nombre_completo],
                 "Email": [email],
