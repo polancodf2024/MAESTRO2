@@ -229,7 +229,7 @@ def enviar_email_confirmacion(correo, nombre, asunto):
 st.title("Sistema de convocatorias OASIS")
 st.image("escudo_COLOR.jpg", width=200)
 
-correo = st.text_input("Ingresa su correo electrónico y presiona ENTER:")
+correo = st.text_input("Ingrese su correo electrónico y presione ENTER:")
 
 if correo:
     registro = buscar_correo(correo)
