@@ -104,7 +104,7 @@ def obtener_numero_convocatorias():
 
 # Interfaz de Streamlit
 st.image("escudo_COLOR.jpg", width=150)
-st.title("Sistema de productividad OASIS")
+st.title("Monitoreo de la productividad de OASIS")
 fecha_actual = datetime.now().strftime("%Y-%m-%d")
 st.write(f"Fecha actual: {fecha_actual}")
 
@@ -124,7 +124,7 @@ if df_cor is not None:
     col1, col2 = st.columns(2)
     
     with col1:
-        st.subheader("Situación")
+        st.subheader("Últimos 6 meses")
         for estado, cantidad in totales_6meses.items():
             st.metric(label=f"Estado: {estado}", value=cantidad)
         st.metric(label="Últimos 6 meses", value=sum(totales_6meses.values()))
@@ -141,27 +141,19 @@ df_con = extraer_datos(local_file_csv)
 if df_con is not None:
     numero_convocatorias = obtener_numero_convocatorias()
     
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.subheader("Situación")
-        totales_con = df_con["Estado"].value_counts().to_dict()
-        for estado, cantidad in totales_con.items():
-            st.metric(label=f"Estado: {estado}", value=cantidad)
-    
-    with col2:
-        st.subheader("Suscritos")
-        st.metric(
-            label="Últimos 6 meses", 
-            value=sum(totales_con.values())
-        )
-        total_registros_con = contar_registros_con_wc(local_file_csv)
-        st.metric(
-            label="Histórico", 
-            value=total_registros_con
-        )
-    with col1:
-        st.metric(
-            label="Convocatorias enviadas:", 
-            value=numero_convocatorias
-        )
+    # Mostrar solo una columna (eliminada la columna de Situación)
+    st.subheader("Inscritos")
+    st.metric(
+        label="Últimos 6 meses", 
+        value=sum(df_con["Estado"].value_counts().values)
+    )
+    total_registros_con = contar_registros_con_wc(local_file_csv)
+    st.metric(
+        label="Histórico", 
+        value=total_registros_con
+    )
+    st.metric(
+        label="Convocatorias enviadas:", 
+        value=numero_convocatorias
+    )
+
