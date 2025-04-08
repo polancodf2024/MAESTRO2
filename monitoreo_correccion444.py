@@ -50,6 +50,7 @@ def extraer_datos(archivo, es_correccion=False, filtrar_fechas=True):
     try:
         df = pd.read_csv(archivo, dtype=str, keep_default_na=False, on_bad_lines='skip')
         df = df.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
+        df["Estado"] = df["Estado"].replace({"Activo": "En proceso"})
         
         if es_correccion:
             # Seleccionar columnas relevantes para correcciones
