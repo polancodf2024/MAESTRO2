@@ -33,6 +33,40 @@ REMOTE_FILE_PDF = "convocatoria.pdf"         # Nombre fijo para el PDF
 LOCAL_FILE_CSV = st.secrets["local_file"]   # Usando el mismo archivo local
 LOCAL_FILE_PDF = "convocatoria.pdf"         # Nombre fijo para el PDF local
 
+# Función para verificar la contraseña
+def check_password():
+    """Solicita la contraseña y verifica si es correcta."""
+    def password_entered():
+        """Verifica si la contraseña es correcta."""
+        if st.session_state["password"] == "Tt5plco5":
+            st.session_state["password_correct"] = True
+            del st.session_state["password"]  # No almacenar la contraseña
+        else:
+            st.session_state["password_correct"] = False
+
+    # Mostrar el campo de contraseña solo si no se ha autenticado
+    if "password_correct" not in st.session_state:
+        st.image("escudo_COLOR.jpg", width=150)
+        st.title("Acceso al Sistema")
+        st.text_input(
+            "Ingrese la contraseña de acceso:", 
+            type="password", 
+            on_change=password_entered, 
+            key="password"
+        )
+        return False
+    elif not st.session_state["password_correct"]:
+        st.image("escudo_COLOR.jpg", width=150)
+        st.title("Acceso al Sistema")
+        st.text_input(
+            "Contraseña incorrecta. Intente nuevamente:", 
+            type="password", 
+            on_change=password_entered, 
+            key="password"
+        )
+        return False
+    return True
+
 def recibir_archivo_remoto(file_remote, file_local):
     try:
         ssh = paramiko.SSHClient()
@@ -197,7 +231,11 @@ def enviar_convocatoria_a_activos():
     except Exception as e:
         st.error(f"Error al enviar la convocatoria: {e}")
 
-# Interfaz de usuario
+# Verificar la contraseña al inicio
+if not check_password():
+    st.stop()
+
+# Interfaz de usuario (solo se muestra si la contraseña es correcta)
 st.image("escudo_COLOR.jpg", width=150)
 st.title("Gestión de Convocatorias")
 
