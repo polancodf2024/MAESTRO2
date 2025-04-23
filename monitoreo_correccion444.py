@@ -12,13 +12,36 @@ config = toml.load(".streamlit/config.toml")
 smtp_server = st.secrets["smtp_server"]
 remote_host = st.secrets["remote_host"]
 remote_user = st.secrets["remote_user"]
-remote_password = st.secrets["remote_password"]
+remote_password = st.secrets["remote_password"]  # Contraseña para autenticación
 remote_port = st.secrets["remote_port"]
 remote_dir = st.secrets["remote_dir"]
 remote_file_cor = st.secrets["remote_file_cor"]
 local_file_cor = st.secrets["local_file_cor"]
 remote_file_csv = st.secrets["remote_file_csv"]
 local_file_csv = st.secrets["local_file_csv"]
+
+# Función para autenticación
+def autenticar():
+    st.title("🔒 Acceso al Sistema de Monitoreo")
+    password = st.text_input("Ingrese la contraseña:", type="password")
+    
+    if st.button("Acceder"):
+        if password == remote_password:
+            st.session_state.autenticado = True
+            st.rerun()
+        else:
+            st.error("Contraseña incorrecta")
+    return False
+
+# Verificar autenticación al inicio
+if not hasattr(st.session_state, 'autenticado'):
+    st.session_state.autenticado = False
+
+if not st.session_state.autenticado:
+    autenticar()
+    st.stop()
+
+# --- Resto del código original (sin cambios) ---
 
 # Función para descargar archivos remotos
 def recibir_archivo_remoto(remote_file, local_file):
@@ -53,7 +76,6 @@ def extraer_datos(archivo, es_correccion=False, filtrar_fechas=True):
         df["Estado"] = df["Estado"].replace({"Activo": "En proceso"})
         
         if es_correccion:
-            # Seleccionar columnas relevantes para correcciones
             columnas = [
                 "Fecha", 
                 "Nombre", 
@@ -65,7 +87,6 @@ def extraer_datos(archivo, es_correccion=False, filtrar_fechas=True):
             ]
             df = df[columnas]
         else:
-            # Para archivos CSV normales (suscriptores)
             columnas = ["Fecha", "Nombre completo", "Correo electronico", "Numero economico", "Estado"]
             df = df[columnas]
         
@@ -82,7 +103,7 @@ def contar_registros_con_wc(archivo):
     try:
         resultado = subprocess.run(["wc", "-l", archivo], capture_output=True, text=True)
         num_lineas = int(resultado.stdout.split()[0])
-        return num_lineas - 1  # Restamos 1 por el encabezado
+        return num_lineas - 1
     except Exception as e:
         st.error(f"Error al contar registros con wc -l: {e}")
         return 0
@@ -102,7 +123,7 @@ def obtener_numero_convocatorias():
         st.error(f"Error al leer número de convocatorias: {e}")
         return "0"
 
-# Interfaz de Streamlit
+# Interfaz principal (solo visible si autenticado)
 st.image("escudo_COLOR.jpg", width=150)
 st.title("Monitoreo de la productividad de OASIS")
 fecha_actual = datetime.now().strftime("%Y-%m-%d")
@@ -135,13 +156,12 @@ if df_cor is not None:
             st.metric(label=f"Estado: {estado}", value=cantidad)
         st.metric(label="Total", value=total_registros_cor)
 
-# Sección de Suscriptores a Convocatorias (modificada)
+# Sección de Suscriptores a Convocatorias
 st.warning("Sistema: Convocatorias")
 df_con = extraer_datos(local_file_csv)
 if df_con is not None:
     numero_convocatorias = obtener_numero_convocatorias()
     
-    # Mostrar solo una columna (eliminada la columna de Situación)
     st.subheader("Inscritos")
     st.metric(
         label="Últimos 6 meses", 
@@ -157,3 +177,7 @@ if df_con is not None:
         value=numero_convocatorias
     )
 
+# Botón para cerrar sesión
+if st.sidebar.button("🚪 Cerrar sesión"):
+    st.session_state.autenticado = False
+    st.rerun()
