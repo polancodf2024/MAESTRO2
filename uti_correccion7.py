@@ -8,7 +8,6 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
-
 import toml
 
 # Leer configuraciones locales desde config.toml
@@ -22,12 +21,11 @@ email_password = st.secrets["email_password"]
 notification_email = st.secrets["notification_email"]
 remote_host = st.secrets["remote_host"]
 remote_user = st.secrets["remote_user"]
-remote_password = st.secrets["remote_password"]
+remote_password = st.secrets["remote_password"]  # Esta es la contraseña que usaremos para autenticación
 remote_port = st.secrets["remote_port"]
 remote_dir = st.secrets["remote_dir"]
 remote_file_cor = st.secrets["remote_file_cor"]
 local_file_cor = st.secrets["local_file_cor"]
-
 
 # Función para descargar el archivo del servidor remoto
 def recibir_archivo_remoto():
@@ -91,21 +89,15 @@ except Exception as e:
     st.warning("No se pudo sincronizar el archivo automáticamente.")
     st.warning(str(e))
 
-# Solicitar contraseña al inicio
 # Mostrar el logo y título
 st.image("escudo_COLOR.jpg", width=150)
 st.title("Subir el archivo: registro_correccion.csv")
 
-
-PASSWORD = "Tt5plco5"
+# Solicitar contraseña al inicio (usando remote_password)
 input_password = st.text_input("Ingresa la contraseña para acceder:", type="password")
-if input_password != PASSWORD:
-    st.error("Escribe la contraseña correcta, y presiona ENTER.")
+if input_password != remote_password:
+    st.error("Contraseña incorrecta. Por favor ingrese la contraseña válida.")
     st.stop()
-
-# Mostrar el logo y título
-#st.image("escudo_COLOR.jpg", width=150)
-#st.title("Subir el archivo: registro_correccion.csv")
 
 # Subida de archivo
 uploaded_csv = st.file_uploader("Selecciona el archivo para subir y reemplazar el existente", type=["csv"])
@@ -144,4 +136,3 @@ if Path(local_file_cor).exists():
     st.success("Archivo listo para descargar.")
 else:
     st.warning("El archivo local no existe. Sincroniza primero con el servidor.")
-
