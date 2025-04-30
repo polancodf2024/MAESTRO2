@@ -38,7 +38,7 @@ def check_password():
     """Solicita la contraseña y verifica si es correcta."""
     def password_entered():
         """Verifica si la contraseña es correcta."""
-        if st.session_state["password"] == "Tt5plco5":
+        if st.session_state["password"] == REMOTE_PASSWORD:
             st.session_state["password_correct"] = True
             del st.session_state["password"]  # No almacenar la contraseña
         else:
