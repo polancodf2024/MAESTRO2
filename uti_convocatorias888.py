@@ -219,8 +219,8 @@ def enviar_convocatoria_a_activos():
                 try:
                     send_email_with_attachment(
                         email_recipient=correo.strip(),
-                        subject="Nueva Convocatoria",
-                        body="Adjunto encontrarás la nueva convocatoria. Revisa los detalles en el archivo PDF.",
+                        subject="Nueva Convocatoria INCICh",
+                        body="Adjunto encontrarás la nueva convocatoria del INCICh. Revisa los detalles en el archivo PDF.",
                         attachment_path=LOCAL_FILE_PDF
                     )
                     enviados += 1
