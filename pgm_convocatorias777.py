@@ -233,7 +233,7 @@ correo = st.text_input("Ingrese su correo electrónico y presione ENTER:")
 
 # Añadir el mensaje aquí
 if "@hotmail." in correo.lower():
-    st.info("Como su correo es de Hotmail, registre en su lista de contactos el correo: abcdf2024dfabc@gmail.com")
+    st.info("Como su correo es de Hotmail, registre en su lista de contactos el correo: cardiologiaproyectos@gmail.com")
 
 if correo:
     registro = buscar_correo(correo)
