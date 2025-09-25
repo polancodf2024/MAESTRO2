@@ -5,6 +5,7 @@ from pathlib import Path
 import smtplib
 import ssl
 import toml
+import time  # Importar time para los delays
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
@@ -32,6 +33,11 @@ REMOTE_FILE_CSV = st.secrets["remote_file"]  # Usando el mismo archivo remoto
 REMOTE_FILE_PDF = "convocatoria.pdf"         # Nombre fijo para el PDF
 LOCAL_FILE_CSV = st.secrets["local_file"]   # Usando el mismo archivo local
 LOCAL_FILE_PDF = "convocatoria.pdf"         # Nombre fijo para el PDF local
+
+# Configuración de delays y bloques para evitar detección como spam
+DELAY_ENTRE_EMAILS = 3  # segundos entre cada email
+DELAY_ENTRE_BLOQUES = 11  # segundos entre bloques de emails
+EMAILS_POR_BLOQUE = 11  # cantidad de emails por bloque
 
 # Función para verificar la contraseña
 def check_password():
@@ -212,9 +218,15 @@ def enviar_convocatoria_a_activos():
             st.error("Error: El archivo PDF local no existe. Por favor súbelo primero.")
             return
 
-        # Enviar convocatorias
+        # Enviar convocatorias con delays y por bloques
         enviados = 0
-        for correo in correos_activos:
+        total_correos = len(correos_activos)
+        
+        # Crear barra de progreso
+        progress_bar = st.progress(0)
+        status_text = st.empty()
+        
+        for i, correo in enumerate(correos_activos):
             if pd.notna(correo) and '@' in str(correo):
                 try:
                     send_email_with_attachment(
@@ -224,10 +236,25 @@ def enviar_convocatoria_a_activos():
                         attachment_path=LOCAL_FILE_PDF
                     )
                     enviados += 1
+                    status_text.text(f"Enviados: {enviados}/{total_correos} - Último envío: {correo.strip()}")
+                    
+                    # Actualizar barra de progreso
+                    progress_bar.progress((i + 1) / total_correos)
+                    
+                    # Delay entre emails
+                    time.sleep(DELAY_ENTRE_EMAILS)
+                    
+                    # Delay adicional después de cada bloque
+                    if (i + 1) % EMAILS_POR_BLOQUE == 0 and (i + 1) < total_correos:
+                        status_text.text(f"Pausa de {DELAY_ENTRE_BLOQUES} segundos después del bloque {(i + 1) // EMAILS_POR_BLOQUE}...")
+                        time.sleep(DELAY_ENTRE_BLOQUES)
+                        
                 except Exception as e:
                     st.warning(f"Error al enviar a {correo}: {str(e)}")
         
-        st.success(f"Convocatoria enviada a {enviados} de {len(correos_activos)} correos activos.")
+        status_text.text(f"Proceso completado!")
+        st.success(f"Convocatoria enviada a {enviados} de {total_correos} correos activos.")
+        
     except Exception as e:
         st.error(f"Error al enviar la convocatoria: {e}")
 
@@ -238,6 +265,14 @@ if not check_password():
 # Interfaz de usuario (solo se muestra si la contraseña es correcta)
 st.image("escudo_COLOR.jpg", width=150)
 st.title("Gestión de Convocatorias")
+
+# Mostrar configuración de envío
+st.sidebar.header("Configuración de Envío")
+st.sidebar.info(f"""
+- Delay entre emails: {DELAY_ENTRE_EMAILS} segundos
+- Emails por bloque: {EMAILS_POR_BLOQUE}
+- Delay entre bloques: {DELAY_ENTRE_BLOQUES} segundos
+""")
 
 # Sección para subir archivo CSV
 st.header(f"Subir {LOCAL_FILE_CSV}")
