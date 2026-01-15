@@ -155,8 +155,8 @@ def actualizar_csv_remoto(df):
         st.error(f"❌ Error al actualizar CSV remoto: {e}")
         return False
 
-def send_email_with_attachment(email_recipient, subject, body, attachment_path):
-    """Envía correo electrónico"""
+def send_email_with_attachment(email_recipient, subject, body, attachment_path, attachment_filename):
+    """Envía correo electrónico con archivo adjunto"""
     try:
         if not Path(attachment_path).exists():
             st.error(f"Archivo adjunto no encontrado: {attachment_path}")
@@ -177,7 +177,8 @@ def send_email_with_attachment(email_recipient, subject, body, attachment_path):
             part = MIMEBase('application', 'octet-stream')
             part.set_payload(attachment.read())
             encoders.encode_base64(part)
-            part.add_header('Content-Disposition', f'attachment; filename="{Path(attachment_path).name}"')
+            # Usar el nombre de archivo proporcionado por el usuario
+            part.add_header('Content-Disposition', f'attachment; filename="{attachment_filename}"')
             msg.attach(part)
 
         context = ssl.create_default_context()
@@ -241,7 +242,7 @@ def actualizar_contador_convocatorias(df):
         st.error(f"❌ Error al actualizar contador: {e}")
         return df
 
-def enviar_convocatoria_a_activos():
+def enviar_convocatoria_a_activos(attachment_filename):
     """Envía convocatoria a todos los contactos activos - TRABAJA DIRECTAMENTE CON EL REMOTO"""
     
     # 1. LEER CSV DIRECTAMENTE DEL SERVIDOR REMOTO
@@ -301,7 +302,8 @@ def enviar_convocatoria_a_activos():
             email_recipient=correo,
             subject="Nueva Convocatoria INCICh",
             body="Adjunto encontrarás la nueva convocatoria del INCICh. Revisa los detalles en el archivo PDF.",
-            attachment_path=LOCAL_FILE_PDF
+            attachment_path=LOCAL_FILE_PDF,
+            attachment_filename=attachment_filename  # Usar el nombre proporcionado por el usuario
         ):
             enviados += 1
         else:
@@ -342,8 +344,10 @@ def enviar_convocatoria_a_activos():
                 - Fallos: {fallados}
                 - Tasa éxito: {tasa_exito:.1f}%
                 - Hora: {pd.Timestamp.now().strftime('%H:%M:%S')}
+                - Nombre archivo enviado: {attachment_filename}
                 """,
-                attachment_path=LOCAL_FILE_PDF
+                attachment_path=LOCAL_FILE_PDF,
+                attachment_filename=attachment_filename
             )
             st.info("📧 Reporte enviado")
         except:
@@ -402,28 +406,79 @@ if st.button("💾 Descargar CSV Remoto"):
 
 # Sección para subir PDF AL SERVIDOR REMOTO
 st.header("📄 Subir Convocatoria PDF al Servidor Remoto")
-uploaded_pdf = st.file_uploader("Subir PDF de convocatoria al servidor", type=["pdf"])
-if uploaded_pdf is not None:
+
+# Campo para que el usuario ingrese el nombre del archivo
+st.subheader("📝 Nombre del archivo PDF")
+st.write("Ingresa dos adjetivos calificativos que identifiquen el documento:")
+st.info("Ejemplo: `convocatoria Secihti` se convertirá en `convocatoria_Secihti.pdf`")
+
+# Crear dos columnas para los campos de entrada
+col1, col2 = st.columns(2)
+
+with col1:
+    nombre1 = st.text_input("Primer adjetivo", 
+                           placeholder="Ej: convocatoria",
+                           help="Primera parte del nombre del archivo")
+
+with col2:
+    nombre2 = st.text_input("Segundo adjetivo", 
+                           placeholder="Ej: Secihti",
+                           help="Segunda parte del nombre del archivo")
+
+# Verificar que ambos nombres estén completos
+nombre_completo = ""
+if nombre1 and nombre2:
+    nombre_completo = f"{nombre1.strip()}_{nombre2.strip()}.pdf"
+    st.success(f"✅ Nombre del archivo: `{nombre_completo}`")
+elif nombre1 or nombre2:
+    st.warning("⚠️ Por favor completa ambos campos para el nombre del archivo")
+
+# Campo para subir el archivo PDF
+uploaded_pdf = st.file_uploader("Selecciona el archivo PDF", type=["pdf"])
+
+# Procesar cuando se sube un archivo
+if uploaded_pdf is not None and nombre1 and nombre2:
     # Guardar temporalmente localmente
     with open(LOCAL_FILE_PDF, "wb") as f:
         f.write(uploaded_pdf.getbuffer())
     
     file_size = Path(LOCAL_FILE_PDF).stat().st_size
-    st.info(f"PDF tamaño: {file_size/1024:.1f} KB")
+    st.info(f"📊 PDF tamaño: {file_size/1024:.1f} KB")
+    
+    # Usar el nombre proporcionado por el usuario para el archivo remoto
+    nombre_remoto_pdf = nombre_completo
     
     # Subir directamente al servidor remoto
-    if enviar_archivo_remoto(LOCAL_FILE_PDF, REMOTE_FILE_PDF):
-        st.success("✅ PDF subido exitosamente al servidor remoto")
+    if enviar_archivo_remoto(LOCAL_FILE_PDF, nombre_remoto_pdf):
+        st.success(f"✅ PDF subido exitosamente al servidor remoto como `{nombre_remoto_pdf}`")
+        
+        # También guardar el nombre para uso en el envío de correos
+        st.session_state['nombre_archivo_envio'] = nombre_completo
+        st.session_state['pdf_subido'] = True
+    else:
+        st.error("❌ Error al subir el PDF al servidor remoto")
+elif uploaded_pdf is not None and (not nombre1 or not nombre2):
+    st.error("❌ Por favor completa los campos de nombre antes de subir el PDF")
 
 # Envío masivo - SIEMPRE TRABAJA CON EL REMOTO
 st.header("🚀 Envío Masivo desde Servidor Remoto")
-if st.button("📨 INICIAR ENVÍO MASIVO DESDE REMOTO", type="primary", use_container_width=True):
-    # Verificar que existe el PDF local (necesario para adjuntar)
-    if not Path(LOCAL_FILE_PDF).exists():
-        st.error("❌ Primero sube un archivo PDF")
-    else:
-        with st.spinner("🚀 Iniciando envío masivo desde servidor remoto..."):
-            enviar_convocatoria_a_activos()
+
+# Verificar si se subió un PDF y se proporcionó un nombre
+pdf_ready = ('pdf_subido' in st.session_state and st.session_state['pdf_subido'] and 
+             'nombre_archivo_envio' in st.session_state)
+
+if pdf_ready:
+    st.info(f"📋 Archivo listo para enviar: `{st.session_state['nombre_archivo_envio']}`")
+    
+    if st.button("📨 INICIAR ENVÍO MASIVO DESDE REMOTO", type="primary", use_container_width=True):
+        # Verificar que existe el PDF local
+        if not Path(LOCAL_FILE_PDF).exists():
+            st.error("❌ No hay archivo PDF local. Súbelo primero.")
+        else:
+            with st.spinner("🚀 Iniciando envío masivo desde servidor remoto..."):
+                enviar_convocatoria_a_activos(st.session_state['nombre_archivo_envio'])
+else:
+    st.warning("⚠️ Primero sube un archivo PDF y proporciona un nombre para poder enviar convocatorias")
 
 # Pie de página
 st.markdown("---")
