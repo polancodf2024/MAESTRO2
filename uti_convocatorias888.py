@@ -165,6 +165,7 @@ def send_email_with_attachment(email_recipient, subject, body, attachment_path, 
         from email.mime.multipart import MIMEMultipart
         from email.mime.text import MIMEText
         from email.mime.base import MIMEBase
+        from email.mime.application import MIMEApplication
         from email import encoders
 
         msg = MIMEMultipart()
@@ -174,11 +175,21 @@ def send_email_with_attachment(email_recipient, subject, body, attachment_path, 
         msg.attach(MIMEText(body, 'plain'))
 
         with open(attachment_path, "rb") as attachment:
-            part = MIMEBase('application', 'octet-stream')
-            part.set_payload(attachment.read())
-            encoders.encode_base64(part)
-            # Usar el nombre de archivo proporcionado por el usuario
-            part.add_header('Content-Disposition', f'attachment; filename="{attachment_filename}"')
+            # LEER EL ARCHIVO COMO BINARIO
+            file_data = attachment.read()
+            
+            # CREAR EL ADJUNTO CORRECTO PARA PDF
+            if attachment_filename.lower().endswith('.pdf'):
+                # Para archivos PDF, usar MIMEApplication
+                part = MIMEApplication(file_data, Name=attachment_filename)
+                part['Content-Disposition'] = f'attachment; filename="{attachment_filename}"'
+            else:
+                # Para otros tipos de archivo
+                part = MIMEBase('application', 'octet-stream')
+                part.set_payload(file_data)
+                encoders.encode_base64(part)
+                part.add_header('Content-Disposition', f'attachment; filename="{attachment_filename}"')
+            
             msg.attach(part)
 
         context = ssl.create_default_context()
